@@ -93,7 +93,6 @@ exports.deleteSauce = (req, res, next) => {
 exports.likeSauce = (req, res, next) => {
     Sauce.findOne({ _id: req.params.id })
         .then((sauce) => {
-            console.log(sauce)
             //like = 1 (likes = +1)
             //utilisation de la méthode js includes()
             //utilisation de l'opérateur $inc
@@ -120,6 +119,17 @@ exports.likeSauce = (req, res, next) => {
                             .catch(error => res.status(400).json({ error }));
 
                     }
+
+                    if (sauce.usersLiked.includes(req.body.userId) && req.body.like === 1) {
+                        res.status(400).json({ message: 'Action non autorisée' });
+                        return;
+                    }
+
+                    if (sauce.usersDisliked.includes(req.body.userId) && req.body.like === 1) {
+                        res.status(400).json({ message: 'Action non autorisée' });
+                        return;
+                    }
+
                     break;
 
                 case -1:
@@ -140,14 +150,27 @@ exports.likeSauce = (req, res, next) => {
 
                     }
 
+                    if (sauce.usersLiked.includes(req.body.userId) && req.body.like === -1) {
+                        res.status(400).json({ message: 'Action non autorisée' });
+                        return;
+                    }
+
                     break;
 
                 case 0:
 
+                if (!sauce.usersDisliked.includes(req.body.userId) && !sauce.usersLiked.includes(req.body.userId)){
+                    res.status(400).json({ message: 'Action non autorisée' });
+                    return;
+                }
+
+
+
+                    console.log("case 0")
                     //like = 0 (likes = 0 , pas de vote) enlever le like + supprimer le user id du tableau like
 
                     if (sauce.usersLiked.includes(req.body.userId)) {  //pas de ! car si il est présent..
-
+                        console.log("1")
                         //mis à jour objet BDD , mettre un like + mettre le userid dans le tableau
                         Sauce.updateOne(
                             { _id: req.params.id },
@@ -162,6 +185,7 @@ exports.likeSauce = (req, res, next) => {
 
                     //après un like = -1 on met un like = 0 (likes = 0 , pas de vote, on enlève le dislike)
                     if (sauce.usersDisliked.includes(req.body.userId)) {
+                        console.log("2")
                         //mis à jour objet BDD , mettre un dislike + mettre le userid dans le tableau
                         Sauce.updateOne(
                             { _id: req.params.id },
