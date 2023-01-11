@@ -3,13 +3,22 @@ const app = express();
 const mongoose = require('mongoose')
 const path = require('path'); //accéder au path du serveur 
 
+//helmet protège en configurant de manière appropriée des en-têtes HTTP
+const helmet = require('helmet');
+
+//sécurise le mot de passe et le login dans le code
+const dotenv = require('dotenv').config()
+
+//Mongosanitize contre les attaques injections NoSQL
+const mongoSanitize = require('express-mongo-sanitize');
+
 const userRoutes = require('./routes/user');
 const saucesRoutes = require('./routes/sauces');
 
 app.use(express.json());
 
-mongoose.connect('mongodb+srv://Chloe:unmotdepasse@cluster0.cqp7yde.mongodb.net/test?retryWrites=true&w=majority',
-  { useNewUrlParser: true,
+mongoose.connect(process.env.MONGODB_URI,{
+   useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
